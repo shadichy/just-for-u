@@ -19,23 +19,28 @@
         }
         window.addEventListener("DOMContentLoaded", (e)=> {
             const canvas = document.getElementById("bubble");
-            bubble.style.scale = `${innerWidth/400}`
+            bubble.style.scale = `${innerWidth/420}`
             const ctx = canvas.getContext("2d");
             ctx.beginPath();
             let start = Fn(-1 * PI),
-                cur = 0
+                cur = 0,
+                ratio = 12
             ctx.moveTo(200, 384)
             function draw(pos) {
+                if (ratio <= 11) return
                 pos = Fn((2 * PI * cur / 100) - PI)
-                console.log(pos[0]*12 + 200, pos[1]*12 + 180)
-                ctx.lineTo(pos[0]*12 + 200, pos[1]*12 + 180)
+                console.log(pos[0]*ratio + 200, pos[1]*ratio + 200 - 5*ratio/3)
+                ctx.lineTo(pos[0]*ratio + 200, pos[1]*ratio + 200 - 5*ratio/3)
                 ctx.strokeStyle = "orange"
                 ctx.stroke()
                 // ctx.fillStyle = "orange";
                 // ctx.fill()
                 cur++
-                if (cur > 100) return
-                setTimeout(draw, 50);
+                if (cur > 100) {
+                    cur=0
+                    ratio-=.2
+                }
+                setTimeout(draw, 20);
             }
             draw()
         })
