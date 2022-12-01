@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Just for you</title>
+</head>
+<body style="margin: 0; display: flex; justify-content: center; align-items: center;width: 100vw; height: 100vh;">
+    <canvas id="bubble" width="400" height="400"></canvas>
+    <script>
+        const { sin, cos, PI } = Math
+
+        function Fn(t) {
+            const 
+                x = (16 * (sin(t) ** 3)),
+                y = -(13 * cos(t) - 5 * cos(2 * t) - 2 * cos( 3 * t) - cos(4 * t))
+            return [x, y]
+        }
+        window.addEventListener("DOMContentLoaded", (e)=> {
+            const canvas = document.getElementById("bubble");
+            bubble.style.scale = `${innerWidth/400}`
+            const ctx = canvas.getContext("2d");
+            ctx.beginPath();
+            let start = Fn(-1 * PI),
+                cur = 0
+            ctx.moveTo(200, 384)
+            function draw(pos) {
+                pos = Fn((2 * PI * cur / 100) - PI)
+                console.log(pos[0]*12 + 200, pos[1]*12 + 180)
+                ctx.lineTo(pos[0]*12 + 200, pos[1]*12 + 180)
+                ctx.strokeStyle = "orange"
+                ctx.stroke()
+                // ctx.fillStyle = "orange";
+                // ctx.fill()
+                cur++
+                if (cur > 100) return
+                setTimeout(draw, 50);
+            }
+            draw()
+        })
+    </script>
+</body>
+</html>
