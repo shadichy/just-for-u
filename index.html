@@ -1,223 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Just for you</title>
-</head>
-<body style="margin: 0; display: flex; justify-content: center; align-items: center;width: 100vw; height: 100vh; background-color: #000;">
+  </head>
+  <body
+    style="
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+    "
+  >
     <canvas id="bubble" width="400" height="400"></canvas>
     <script>
-        const { sin, cos, PI, random, floor } = Math,
-            settings = {
-                particles: {
-                    length: 300,
-                    duration: 2, // particle duration in sec
-                    velocity: -20, // particle velocity in pixels/sec
-                    effect: 1, // play with this for a nice effect
-                    size: 18, // particle size in pixels
-                    color: ["#fe5000", "#FF5114", "#FF5800", "#FF5A00", "red"] // particle color
-                },
-            }
-        
-        function Fn(t, k = 1, m = 0) {
-            const 
-            x = k * (16 * (sin(t) ** 3)),
-            y = -k * (13 * cos(t) - 5 * cos(2 * t) - 2 * cos( 3 * t) - cos(4 * t)) - m
-            return [x, y]
-        }
-        
-        class Point {
-            constructor(x, y) {
-                this.x = x || 0
-                this.y = y || 0
-            }
-            clone() {
-                return new Point(this.x, this.y)
-            }
-            length(length) {
-                if (typeof length == "undefined")
-                    return Math.sqrt(this.x * this.x + this.y * this.y)
-                this.normalize()
-                this.x *= length
-                this.y *= length
-                return this
-            }
-            normalize() {
-                const length = this.length()
-                this.x /= length
-                this.y /= length
-                return this
-            }
-        }
+      const { sin, cos, PI, random, floor } = Math,
+        settings = {
+          particles: {
+            length: 300,
+            duration: 2, // particle duration in sec
+            velocity: -20, // particle velocity in pixels/sec
+            effect: 1, // play with this for a nice effect
+            size: 18, // particle size in pixels
+            color: "51", // particle color
+          },
+        };
 
-        class Particle {
-            constructor() {
-                this.position = new Point()
-                this.velocity = new Point()
-                this.acceleration = new Point()
-                this.age = 0
-                this.i = 0
-            }
-            initialize(x, y, dx, dy) {
-                this.position.x = x;
-                this.position.y = y;
-                this.velocity.x = dx;
-                this.velocity.y = dy;
-                this.acceleration.x = dx * settings.particles.effect;
-                this.acceleration.y = dy * settings.particles.effect;
-                this.age = 0;
-            }
-            update(deltaTime) {
-                this.position.x += this.velocity.x * deltaTime;
-                this.position.y += this.velocity.y * deltaTime;
-                this.velocity.x += this.acceleration.x * deltaTime;
-                this.velocity.y += this.acceleration.y * deltaTime;
-                this.age += deltaTime;
-            }
-            draw(context, image) {
-                const particle = image[floor(this.i/100)],
-                    t = this.age / settings.particles.duration,
-                    alpha = (t-.8) * -6.25 * t ,
-                    size = particle.width * alpha
-                if (this.i >= image.length*100-1)
-                    this.i = 0
-                else
-                    this.i++
-                context.globalAlpha = alpha
-                context.drawImage(
-                    particle,
-                    this.position.x - size / 2,
-                    this.position.y - size / 2,
-                    size,
-                    size
+      var stage = 1;
+
+      function processCol(seed) {
+        switch (stage) {
+          case 1:
+            seed += 256;
+            if (seed == 16776960) stage = 2;
+            break;
+          case 2:
+            seed -= 65536;
+            if (seed == 65280) stage = 3;
+            break;
+          case 3:
+            seed += 1;
+            if (seed == 65535) stage = 4;
+            break;
+          case 4:
+            seed -= 256;
+            if (seed == 255) stage = 5;
+            break;
+          case 5:
+            seed += 65536;
+            if (seed == 16711935) stage = 6;
+            break;
+          case 6:
+            seed -= 1;
+            if (seed == 16711680) stage = 0;
+            break;
+        }
+        return seed;
+      }
+
+      function Fn(t, k = 1, m = 0) {
+        const x = k * (16 * sin(t) ** 3),
+          y =
+            -k * (13 * cos(t) - 5 * cos(2 * t) - 2 * cos(3 * t) - cos(4 * t)) -
+            m;
+        return [x, y];
+      }
+
+      class Point {
+        constructor(x, y) {
+          this.x = x || 0;
+          this.y = y || 0;
+        }
+        clone() {
+          return new Point(this.x, this.y);
+        }
+        length(length) {
+          if (typeof length == "undefined")
+            return Math.sqrt(this.x * this.x + this.y * this.y);
+          this.normalize();
+          this.x *= length;
+          this.y *= length;
+          return this;
+        }
+        normalize() {
+          const length = this.length();
+          this.x /= length;
+          this.y /= length;
+          return this;
+        }
+      }
+
+      class Particle {
+        constructor() {
+          this.position = new Point();
+          this.velocity = new Point();
+          this.acceleration = new Point();
+          this.age = 0;
+          this.i = 0;
+        }
+        initialize(x, y, dx, dy) {
+          this.position.x = x;
+          this.position.y = y;
+          this.velocity.x = dx;
+          this.velocity.y = dy;
+          this.acceleration.x = dx * settings.particles.effect;
+          this.acceleration.y = dy * settings.particles.effect;
+          this.age = 0;
+        }
+        update(deltaTime) {
+          this.position.x += this.velocity.x * deltaTime;
+          this.position.y += this.velocity.y * deltaTime;
+          this.velocity.x += this.acceleration.x * deltaTime;
+          this.velocity.y += this.acceleration.y * deltaTime;
+          this.age += deltaTime;
+        }
+        draw(context, image) {
+          const particle = image[this.i],
+            t = this.age / settings.particles.duration,
+            alpha = (t - 0.8) * -6.25 * t,
+            size = particle.width * alpha;
+          if (this.i >= image.length - 1) this.i = 0;
+          else this.i++;
+          context.globalAlpha = alpha;
+          context.drawImage(
+            particle,
+            this.position.x - size / 2,
+            this.position.y - size / 2,
+            size,
+            size
+          );
+        }
+      }
+
+      class ParticlePool {
+        particles = [];
+        firstActive = 0;
+        firstFree = 0;
+
+        constructor(length) {
+          for (let i = 0; i < length; i++) this.particles.push(new Particle());
+        }
+        add(x, y, dx, dy) {
+          this.particles[this.firstFree].initialize(x, y, dx, dy);
+
+          this.firstFree++;
+          if (this.firstFree == this.particles.length) this.firstFree = 0;
+          if (this.firstActive == this.firstFree) this.firstActive++;
+          if (this.firstActive == this.particles.length) this.firstActive = 0;
+        }
+        update(deltaTime) {
+          if (this.firstActive < this.firstFree)
+            this.particles
+              .filter(
+                (particle, index) =>
+                  index < this.firstFree && index >= this.firstActive
+              )
+              .forEach((particle) => particle.update(deltaTime));
+          if (this.firstActive > this.firstFree)
+            this.particles
+              .filter(
+                (particle, index) =>
+                  index < this.firstFree || index >= this.firstActive
+              )
+              .forEach((particle) => particle.update(deltaTime));
+
+          while (
+            this.particles[this.firstActive].age >=
+              settings.particles.duration &&
+            this.firstActive != this.firstFree
+          ) {
+            this.firstActive++;
+            if (this.firstActive == this.particles.length) this.firstActive = 0;
+          }
+        }
+        draw(context, image) {
+          if (this.firstActive < this.firstFree)
+            this.particles
+              .filter(
+                (particle, index) =>
+                  index < this.firstFree && index >= this.firstActive
+              )
+              // .subarray(this.firstActive, this.firstFree)
+              .forEach((particle) => particle.draw(context, image));
+          if (this.firstActive > this.firstFree)
+            this.particles
+              .filter(
+                (particle, index) =>
+                  index < this.firstFree || index >= this.firstActive
+              )
+              .forEach((particle) => particle.draw(context, image));
+        }
+      }
+
+      const particles = new ParticlePool(settings.particles.length),
+        particleRate = settings.particles.length / settings.particles.duration,
+        pointOnHeart = (t) => (([x, y]) => new Point(x, y))(Fn(t, 12, 20)),
+        image = (() => {
+          const img = (color) => {
+              const particle = document.createElement("canvas"),
+                context = particle.getContext("2d");
+              particle.width = settings.particles.size;
+              particle.height = settings.particles.size;
+              let t = -PI,
+                d = (2 * PI) / 100;
+              context.beginPath();
+              (([x, y]) => context.moveTo(x, y))(
+                Fn(t).map(
+                  (e) =>
+                    settings.particles.size / 2 +
+                    (e * settings.particles.size) / 35
                 )
-            }
+              );
+              while (t <= PI)
+                (([x, y]) => context.lineTo(x, y))(
+                  Fn((t += d)).map(
+                    (e) =>
+                      settings.particles.size / 2 +
+                      (e * settings.particles.size) / 35
+                  )
+                );
+              context.fillStyle = color;
+              context.fill();
+              const image = new Image();
+              image.src = particle.toDataURL();
+              return image;
+            },
+            IColors = new Array(1536);
+          let color = 16711680;
+          for (let i = 0; i < IColors.length; i++) {
+            IColors[i] = img(`#${("00000" + color.toString(16)).slice(-6)}`);
+            color = processCol(color);
+          }
+          return IColors;
+        })();
+
+      window.addEventListener("DOMContentLoaded", (e) => {
+        const canvas = document.getElementById("bubble");
+        // canvas.style.scale = `${innerWidth/420}`,
+        ctx = canvas.getContext("2d");
+
+        let time;
+        function render() {
+          requestAnimationFrame(render);
+          const newTime = new Date().getTime() / 1000,
+            deltaTime = newTime - (time || newTime);
+          time = newTime;
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          var amount = particleRate * deltaTime;
+          for (let i = 0; i < amount; i++) {
+            let pos = pointOnHeart(PI - 2 * PI * random()),
+              dir = pos.clone().length(settings.particles.velocity);
+            particles.add(
+              canvas.width / 2 + pos.x,
+              canvas.height / 2 + pos.y,
+              dir.x,
+              dir.y
+            );
+          }
+
+          particles.update(deltaTime);
+          particles.draw(ctx, image);
         }
 
-        class ParticlePool {
-            particles = []
-            firstActive = 0
-            firstFree = 0
-
-            constructor(length) {
-                for (let i = 0; i < length; i++)
-                    this.particles.push(new Particle())
-            }
-            add(x, y, dx, dy) {
-                this.particles[this.firstFree].initialize(x, y, dx, dy);
-
-                this.firstFree++;
-                if (this.firstFree == this.particles.length) this.firstFree = 0;
-                if (this.firstActive == this.firstFree) this.firstActive++;
-                if (this.firstActive == this.particles.length) this.firstActive = 0;
-            }
-            update(deltaTime) {
-                if (this.firstActive < this.firstFree) 
-                    this.particles
-                        .filter((particle, index) => (index < this.firstFree && index >= this.firstActive))
-                        // .subarray(this.firstActive, this.firstFree)
-                        .forEach(particle => particle.update(deltaTime))
-                if (this.firstActive > this.firstFree) 
-                    this.particles
-                        .filter((particle, index) => (index < this.firstFree || index >= this.firstActive))
-                        .forEach(particle => particle.update(deltaTime))
-
-                while (
-                    this.particles[this.firstActive].age >= settings.particles.duration &&
-                    this.firstActive != this.firstFree
-                ) {
-                    this.firstActive++;
-                    if (this.firstActive == this.particles.length) this.firstActive = 0;
-                }
-            }
-            draw(context, image) {
-                if (this.firstActive < this.firstFree)
-                    this.particles
-                        .filter((particle, index) => (index < this.firstFree && index >= this.firstActive))
-                        // .subarray(this.firstActive, this.firstFree)
-                        .forEach(particle => particle.draw(context, image))
-                if (this.firstActive > this.firstFree) 
-                    this.particles
-                        .filter((particle, index) => (index < this.firstFree || index >= this.firstActive))
-                        .forEach(particle => particle.draw(context, image))
-            }
+        function Resize() {
+          canvas.style.transform = `scale(${
+            Math.min(innerWidth, innerHeight) / 450
+          })`;
         }
-        
-        window.addEventListener("DOMContentLoaded", (e)=> {
-            const canvas = document.getElementById("bubble")
-                // canvas.style.scale = `${innerWidth/420}`,
-                ctx = canvas.getContext("2d"),
-                particles = new ParticlePool(settings.particles.length),
-                particleRate = settings.particles.length / settings.particles.duration,
-                pointOnHeart = (t)=>(([x, y])=>new Point(x, y))(Fn(t, 12, 20)),
-                image = (() => {
-                    const 
-                        img = (color)=>{
-                            const particle = document.createElement("canvas"),
-                                context = particle.getContext("2d")
-                            particle.width = settings.particles.size;
-                            particle.height = settings.particles.size;
-                            let t = -PI,
-                                d = 2 * PI / 100
-                            context.beginPath()
-                            ;(([x, y]) => context.moveTo(x, y))(Fn(t)
-                                .map(e=> settings.particles.size / 2 +
-                                    (e * settings.particles.size) / 35))
-                            while (t <= PI) 
-                                (([x, y]) => context.lineTo(x, y))(Fn(t+=d)
-                                    .map(e => settings.particles.size / 2 +
-                                        (e * settings.particles.size) / 35));
-                            context.fillStyle = color
-                            context.fill()
-                            const image = new Image()
-                            image.src = particle.toDataURL()
-                            return image
-                        },
-                        IColors = new Array(1000)
-                    for (let i = 0; i < IColors.length; i++) {
-                        IColors[i] = img(`#${floor(random() * 16777216).toString(16)}`)
-                    }
-                    return IColors
-                })()
 
-            let time
-            function render() {
-                requestAnimationFrame(render)
-                const newTime = new Date().getTime() / 1000,
-                    deltaTime = newTime - (time || newTime)
-                time = newTime
+        window.onresize = Resize;
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-                var amount = particleRate * deltaTime;
-                for (let i = 0; i < amount; i++) {
-                    let pos = pointOnHeart(PI - 2 * PI * random()),
-                        dir = pos.clone().length(settings.particles.velocity)
-                    particles.add(
-                        canvas.width / 2 + pos.x,
-                        canvas.height / 2 + pos.y,
-                        dir.x,
-                        dir.y
-                    );
-                }
-
-                particles.update(deltaTime)
-                particles.draw(ctx, image)
-            }
-
-            function Resize() {
-                canvas.style.transform = `scale(${Math.min(innerWidth, innerHeight)/450})`
-            }
-
-            window.onresize = Resize
-
-            setTimeout(function () {
-                Resize()
-                render()
-            }, 10)
-        })
+        setTimeout(function () {
+          Resize();
+          render();
+        }, 10);
+      });
     </script>
-</body>
+  </body>
 </html>
