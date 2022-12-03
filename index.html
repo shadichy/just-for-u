@@ -33,6 +33,38 @@
 
       var stage = 1;
 
+      window.requestAnimationFrame = (function () {
+        return (
+          window.requestAnimationFrame ||
+          window.webkitRequestAnimationFrame ||
+          window.mozRequestAnimationFrame ||
+          window.msRequestAnimationFrame ||
+          window.oRequestAnimationFrame ||
+          function (f) {
+            window.setTimeout(f, 1e3 / 60);
+          }
+        );
+      })();
+
+      function loopFPS(fn, fps = 60) {
+        let then = new Date().getTime();
+
+        const interval = 1000 / fps;
+
+        return (function loop(time) {
+          requestAnimationFrame(loop);
+
+          let now = new Date().getTime(),
+            delta = now - then;
+
+          if (delta > interval) {
+            then = now - (delta % interval);
+
+            fn();
+          }
+        })(0);
+      }
+
       function processCol(seed) {
         switch (stage) {
           case 1:
@@ -123,7 +155,7 @@
           const particle = image[this.i],
             t = this.age / settings.particles.duration,
             alpha = (t - 0.8) * -6.25 * t,
-            size = particle.width * alpha;
+            size = alpha > 0 ? particle.width * alpha : 0;
           if (this.i >= image.length - 1) this.i = 0;
           else this.i++;
           context.globalAlpha = alpha;
@@ -185,7 +217,6 @@
                 (particle, index) =>
                   index < this.firstFree && index >= this.firstActive
               )
-              // .subarray(this.firstActive, this.firstFree)
               .forEach((particle) => particle.draw(context, image));
           if (this.firstActive > this.firstFree)
             this.particles
@@ -241,12 +272,10 @@
 
       window.addEventListener("DOMContentLoaded", (e) => {
         const canvas = document.getElementById("bubble");
-        // canvas.style.scale = `${innerWidth/420}`,
         ctx = canvas.getContext("2d");
 
         let time;
         function render() {
-          requestAnimationFrame(render);
           const newTime = new Date().getTime() / 1000,
             deltaTime = newTime - (time || newTime);
           time = newTime;
@@ -279,7 +308,7 @@
 
         setTimeout(function () {
           Resize();
-          render();
+          loopFPS(render, 60)
         }, 10);
       });
     </script>
