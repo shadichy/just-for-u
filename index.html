@@ -47,14 +47,14 @@
       color: #fff;
       font-family: "Comfortaa";
       backdrop-filter: blur(0.5vh);
-			position: relative;
+      position: relative;
     }
     #textContainer > div > div {
       text-align: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
-			align-items: center;
+      align-items: center;
     }
     #textContainer > div h1 {
       font-weight: 700;
@@ -83,31 +83,36 @@
       object-fit: cover;
       border-radius: 2vh;
     }
-		@media (max-aspect-ratio: 133/100) {
-			#textContainer > div {
-				flex-direction: column;
-				width: 90vw;
-				height: 95vh;
-				box-sizing: border-box;
-			}
-			#textContainer > div > div {
-				height: 35%;
-			}
-			#textContainer > div h1, #textContainer > div p {
-				margin: 1vmin;
-			}
-			#textContainer > div > div:nth-child(2) {
-				height: 25%;
-			}
-			#textContainer > div > div:nth-child(2) span {
-				width: 21vh;
-				height: 21vh;
-			}
-			#textContainer > div img {
-				width: 24vh;
-				height: 24vh;
-			}
-		}
+    @media (max-aspect-ratio: 133/100) {
+      #textContainer > div {
+        flex-direction: column;
+        width: 90vw;
+        height: 95vh;
+        box-sizing: border-box;
+      }
+      #textContainer > div > div {
+        height: 35%;
+      }
+      #textContainer > div h1,
+      #textContainer > div p {
+        margin: 1vmin;
+      }
+      #textContainer > div > div:nth-child(2) {
+        height: 25%;
+      }
+      #textContainer > div > div:nth-child(2) p {
+        font-size: 2vh;
+        white-space: nowrap;
+      }
+      #textContainer > div > div:nth-child(2) span {
+        width: 21vh;
+        height: 21vh;
+      }
+      #textContainer > div img {
+        width: 24vh;
+        height: 24vh;
+      }
+    }
   </style>
   <body>
     <div id="bubbleContainer">
@@ -117,7 +122,7 @@
       <div>
         <div>
           <img src="shad.png" alt="0" />
-          <h1>Bùi Phúc Khang</h1>
+          <h1>Bùi Gia Viện</h1>
           <p>06/09/2005</p>
         </div>
         <div>
@@ -133,7 +138,7 @@
       </div>
     </div>
     <script>
-      const { sin, cos, PI, random, floor } = Math,
+      const { sin, cos, PI, random, floor, min, sqrt } = Math,
         settings = {
           particles: {
             length: 300,
@@ -228,7 +233,7 @@
         }
         length(length) {
           if (typeof length == "undefined")
-            return Math.sqrt(this.x * this.x + this.y * this.y);
+            return sqrt(this.x * this.x + this.y * this.y);
           this.normalize();
           this.x *= length;
           this.y *= length;
@@ -415,7 +420,9 @@
 
         function Resize() {
           canvas.style.transform = `scale(${
-            Math.min(innerWidth, innerHeight) / (clicked ? 1500 : 450)
+            clicked
+              ? innerHeight / (innerWidth/innerHeight >= 4/3 ? 1500 : 3000)
+              : min(innerWidth, innerHeight) / 450
           })`;
         }
 
