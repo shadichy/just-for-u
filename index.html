@@ -6,18 +6,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Just for you</title>
   </head>
-  <body
-    style="
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap");
+    body {
       margin: 0;
+      background-color: #000;
+    }
+    #bubbleContainer {
+      position: fixed;
       display: flex;
       justify-content: center;
       align-items: center;
       width: 100vw;
       height: 100vh;
-      background-color: #000;
-    "
-  >
-    <canvas id="bubble" width="400" height="400"></canvas>
+      z-index: 2;
+    }
+    #bubble {
+      transition: all 0.4s ease-in-out;
+    }
+    #textContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+      background-image: url(nebula.png);
+      background-repeat: no-repeat;
+      background-size: cover;
+      transition: all 0.5s ease-in-out;
+      opacity: 0;
+    }
+    #textContainer > div {
+      display: flex;
+      justify-content: space-between;
+      padding: 6vmin;
+      width: 65vw;
+      height: 45vh;
+      border-radius: 4vh;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      font-family: "Comfortaa";
+      backdrop-filter: blur(0.5vh);
+			position: relative;
+    }
+    #textContainer > div > div {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+			align-items: center;
+    }
+    #textContainer > div h1 {
+      font-weight: 700;
+      font-size: 3vh;
+    }
+    #textContainer > div p {
+      font-weight: 400;
+      font-size: 2vh;
+      letter-spacing: 1vh;
+    }
+    #textContainer > div > div:nth-child(2) {
+      justify-content: flex-start;
+    }
+    #textContainer > div > div:nth-child(2) p {
+      letter-spacing: unset;
+      font-weight: 700;
+      font-size: 3vh;
+    }
+    #textContainer > div > div:nth-child(2) span {
+      width: 32vh;
+      height: 32vh;
+    }
+    #textContainer > div img {
+      width: 28vh;
+      height: 28vh;
+      object-fit: cover;
+      border-radius: 2vh;
+    }
+		@media (max-aspect-ratio: 133/100) {
+			#textContainer > div {
+				flex-direction: column;
+				width: 90vw;
+				height: 95vh;
+				box-sizing: border-box;
+			}
+			#textContainer > div > div {
+				height: 35%;
+			}
+			#textContainer > div h1, #textContainer > div p {
+				margin: 1vmin;
+			}
+			#textContainer > div > div:nth-child(2) {
+				height: 25%;
+			}
+			#textContainer > div > div:nth-child(2) span {
+				width: 21vh;
+				height: 21vh;
+			}
+			#textContainer > div img {
+				width: 24vh;
+				height: 24vh;
+			}
+		}
+  </style>
+  <body>
+    <div id="bubbleContainer">
+      <canvas id="bubble" width="400" height="400"></canvas>
+    </div>
+    <div id="textContainer">
+      <div>
+        <div>
+          <img src="shad.png" alt="0" />
+          <h1>Bùi Phúc Khang</h1>
+          <p>06/09/2005</p>
+        </div>
+        <div>
+          <p>Chúng ta đã bên nhau</p>
+          <span></span>
+          <p id="sec"></p>
+        </div>
+        <div>
+          <img src="lmai.jpg" alt="" />
+          <h1>Lê Thanh Mai</h1>
+          <p>01/12/2006</p>
+        </div>
+      </div>
+    </div>
     <script>
       const { sin, cos, PI, random, floor } = Math,
         settings = {
@@ -31,7 +145,9 @@
           },
         };
 
-      var stage = 1;
+      var stage = 1,
+        clicked = false,
+        current_sec = ~+new Date() - 167015880;
 
       window.requestAnimationFrame = (function () {
         return (
@@ -59,7 +175,6 @@
 
           if (delta > interval) {
             then = now - (delta % interval);
-
             fn();
           }
         })(0);
@@ -300,7 +415,7 @@
 
         function Resize() {
           canvas.style.transform = `scale(${
-            Math.min(innerWidth, innerHeight) / 450
+            Math.min(innerWidth, innerHeight) / (clicked ? 1500 : 450)
           })`;
         }
 
@@ -308,8 +423,21 @@
 
         setTimeout(function () {
           Resize();
-          loopFPS(render, 60)
+          loopFPS(render, 60);
         }, 10);
+
+        canvas.onclick = () => {
+          document.getElementById("textContainer").style.opacity = "1";
+          clicked = true;
+          setTimeout(Resize, 100);
+        };
+        function updateSec() {
+          const sec = document.getElementById("sec");
+          sec.innerHTML = current_sec + " giây";
+          current_sec++;
+        }
+        updateSec();
+        setInterval(updateSec, 1000);
       });
     </script>
   </body>
